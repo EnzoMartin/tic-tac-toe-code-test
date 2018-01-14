@@ -17,10 +17,10 @@ const Head = (props) => {
         content={props.description || defaultDescription}
       />
       <meta name="viewport" content="width=device-width, initial-scale=1" />
-      <link crossorigin="anonymous" rel="icon" sizes="192x192" href="/static/touch-icon.png" />
-      <link crossorigin="anonymous" rel="apple-touch-icon" href="/static/touch-icon.png" />
-      <link crossorigin="anonymous" rel="mask-icon" href="/static/favicon-mask.svg" color="#49B882" />
-      <link crossorigin="anonymous" rel="icon" href="/static/favicon.ico" />
+      <link crossOrigin="anonymous" rel="icon" sizes="192x192" href="/static/touch-icon.png" />
+      <link crossOrigin="anonymous" rel="apple-touch-icon" href="/static/touch-icon.png" />
+      <link crossOrigin="anonymous" rel="mask-icon" href="/static/favicon-mask.svg" color="#49B882" />
+      <link crossOrigin="anonymous" rel="icon" href="/static/favicon.ico" />
       <meta property="og:url" content={props.url || defaultOGURL} />
       <meta property="og:title" content={props.title || ''} />
       <meta
@@ -33,11 +33,12 @@ const Head = (props) => {
       <meta property="og:image" content={props.ogImage || defaultOGImage} />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
-      <link crossorigin="anonymous" rel="stylesheet" type="text/css" href="/static/style.css" media="all"/>
-      <link crossorigin="anonymous" rel="stylesheet" type="text/css" href="/static/rooms.css" media="all"/>
+      <link crossOrigin="anonymous" rel="stylesheet" type="text/css" href="/static/style.css" media="all"/>
+      <link crossOrigin="anonymous" rel="stylesheet" type="text/css" href="/static/rooms.css" media="all"/>
       <style>
           @import url('https://fonts.googleapis.com/css?family=Roboto');
       </style>
+      <script crossOrigin="anonymous" type="text/javascript" src="/static/primus.js"/>
     </NextHead>
   );
 };

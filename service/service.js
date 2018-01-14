@@ -1,23 +1,34 @@
 const config = require('./config');
 
+const http = require('http');
 const express = require('express');
+const Primus = require('primus');
+const Rooms = require('primus-rooms');
 const async = require('async');
 const next = require('next');
 
 // Middleware imports
 const bunyan = require('express-bunyan-logger');
 const compression = require('compression');
+const session = require('express-session');
+const RedisStore = require('connect-redis')(session);
+const cookie = require('cookie');
+const cookieParser = require('cookie-parser');
+
+// Modules
+const Player = require('./modules/player');
 
 // Configuration
-const { service, logger, redis, signals } = config;
-const app = next(config.next);
-const handle = app.getRequestHandler();
+const { service, logger, redis, redisPub, sessionHandling, redisStore, primus, redisSub, signals } = config;
+const client = next(config.next);
+const handle = client.getRequestHandler();
 
 class Service {
   constructor() {
     this.log = logger.child({ logger: 'service' });
 
-    this.server = express();
+    this.app = express();
+    this.server = http.createServer(this.app);
 
     // Handle the Docker kill signals and attempt a graceful shutdown
     signals.forEach((signal) => {
@@ -31,12 +42,15 @@ class Service {
       this.setupCORS();
     }
 
+    this.setupSession();
+    this.setupWebSockets();
+    this.setupPubSub();
     this.setupMiddleware();
     this.setupRoutes();
   }
 
   initialize() {
-    app
+    client
       .prepare()
       .then(() => {
         this.start();
@@ -57,10 +71,17 @@ class Service {
     next();
   }
 
-  setupCORS() {
-    this.server.use(Service.redirectNonWww);
+  setupSession() {
+    this.app.use(session({
+      store: new RedisStore(redisStore),
+      ...sessionHandling
+    }));
+  }
 
-    this.server.use((req, res, next) => {
+  setupCORS() {
+    this.app.use(Service.redirectNonWww);
+
+    this.app.use((req, res, next) => {
       res.set({
         'X-XSS-Protection': '1; mode=block',
         'Strict-Transport-Security': 'max-age=1209600',
@@ -86,8 +107,75 @@ class Service {
     });
   }
 
+  setupPubSub() {
+    redisSub.on('ready', () => {
+      redisSub.psubscribe('room:*');
+      redisSub.subscribe('rooms');
+      redisSub.subscribe('players');
+
+      redisSub.on('message', (channel, message) => {
+        console.log('Got publish message', channel, message);
+        switch (channel) {
+          case 'rooms':
+            break;
+          case 'players':
+            Player.getOnlineList((err, data) => {
+              if (err) {
+                logger.error({ err }, 'Failed to get players online');
+              } else {
+                this.primus.in('lobby').write({ type: channel, data });
+              }
+            });
+            break;
+          default:
+            logger.info(`Got unhandled message on channel "${channel}"`);
+            break;
+        }
+      });
+    });
+  }
+
+  setupWebSockets() {
+    this.primus = new Primus(this.server, primus);
+    this.primus.save(`${__dirname}/../client/static/primus.js`);
+
+    this.primus.plugin('rooms', Rooms);
+
+    this.primus.on('connection', (spark) => {
+      if (!spark.headers.cookie) {
+        // Malformed session, kill it with fire
+        return spark.end();
+      }
+
+      const sparkId = spark.id;
+      const parsedCookies = cookie.parse(spark.headers.cookie);
+      const playerId = cookieParser.signedCookie(parsedCookies[sessionHandling.name], sessionHandling.secret);
+
+      spark.join(playerId);
+      spark.join('lobby');
+
+      Player.addConnectedSocket(playerId, sparkId, (err) => {
+        if (err) {
+          logger.error({ err }, 'Failed to save connected socket');
+        }
+
+        redisPub.publish('players', null);
+      });
+
+      spark.on('end', () => {
+        Player.removeConnectedSocket(playerId, sparkId, (err) => {
+          if (err) {
+            logger.error({ err }, 'Failed to remove disconnected socket');
+          }
+
+          redisPub.publish('players', null);
+        });
+      });
+    });
+  }
+
   setupMiddleware() {
-    this.server.use(
+    this.app.use(
       compression({
         filter(req, res) {
           return (/json|text|javascript|css/).test(res.getHeader('Content-Type'));
@@ -96,7 +184,8 @@ class Service {
       })
     );
 
-    this.server.use(
+    /*
+    this.app.use(
       bunyan({
         logger: this.log,
         // Who hates console spam? Me!
@@ -109,27 +198,30 @@ class Service {
         ]
       })
     );
+    */
 
-    this.server.use('/static', express.static('./client/static'));
+    this.app.use('/static', express.static('./client/static'));
 
-    this.server.set('x-powered-by', false);
-    this.server.set('trust proxy', 1);
+    this.app.set('x-powered-by', false);
+    this.app.set('trust proxy', 1);
   }
 
   setupRoutes() {
-    this.server.get('/', (req, res) => {
-      app.render(req, res, '/', ['']);
+    this.app.get('/', (req, res) => {
+      // console.log('Session ID', req.sessionHandling.id)
+      // console.log('Session Cookie', req.sessionCookies.get(sessionHandling.name))
+      client.render(req, res, '/', ['']);
     });
 
-    this.server.get('/play/:id', (req, res) => {
-      app.render(req, res, '/room', ['']);
+    this.app.get('/play/:id', (req, res) => {
+      client.render(req, res, '/room', ['']);
     });
 
-    this.server.get('/watch/:id', (req, res) => {
-      app.render(req, res, '/room', ['']);
+    this.app.get('/watch/:id', (req, res) => {
+      client.render(req, res, '/room', ['']);
     });
 
-    this.server.get('*', (req, res) => {
+    this.app.get('*', (req, res) => {
       return handle(req, res);
     });
   }
@@ -139,9 +231,9 @@ class Service {
 
     async.parallel(
       [
-        (callback) => {
-          redis.disconnect(callback);
-        }
+        (callback) => { redis.disconnect(callback); },
+        (callback) => { redisPub.disconnect(callback); },
+        (callback) => { redisSub.disconnect(callback); }
       ],
       (err) => {
         let exitCode = 0;
@@ -159,7 +251,7 @@ class Service {
   }
 
   start() {
-    this.server.listen(service.port, (err) => {
+    this.server = this.server.listen(service.port, (err) => {
       if (err) {
         this.log.error({ err }, 'Service failed to start');
         throw err;

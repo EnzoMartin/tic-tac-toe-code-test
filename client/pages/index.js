@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 
+import primus from '../lib/websocket';
+
 import Head from '../components/head';
 import Nav from '../components/nav';
 
@@ -7,6 +9,10 @@ export default class extends Component {
   static getInitialProps({ query, req }) {
     const { error } = req && req.query || {};
     return { rooms: query, error };
+  }
+
+  componentDidMount() {
+    primus();
   }
 
   render() {
@@ -26,9 +32,9 @@ export default class extends Component {
           <div className="row">
             <table width="100%" cellPadding="0" cellSpacing="0" border="0">
               <tbody>
-                {this.props.rooms.map((item) => {
+                {this.props.rooms.map((item, index) => {
                   return (
-                    <tr>
+                    <tr key={index}>
                       <td>I am room!</td>
                     </tr>
                   );
