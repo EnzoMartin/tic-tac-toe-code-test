@@ -114,7 +114,7 @@ class Service {
       redisSub.subscribe('players');
 
       redisSub.on('message', (channel, message) => {
-        console.log('Got message', channel, message);
+        console.log('Got publish message', channel, message);
         switch (channel) {
           case 'rooms':
             break;
@@ -137,6 +137,7 @@ class Service {
 
   setupWebSockets() {
     this.primus = new Primus(this.server, primus);
+    this.primus.save(`${__dirname}/../client/static/primus.js`);
 
     this.primus.plugin('rooms', Rooms);
 
@@ -145,6 +146,7 @@ class Service {
         // Malformed session, kill it with fire
         return spark.end();
       }
+
       const sparkId = spark.id;
       const parsedCookies = cookie.parse(spark.headers.cookie);
       const playerId = cookieParser.signedCookie(parsedCookies[sessionHandling.name], sessionHandling.secret);

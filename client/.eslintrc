@@ -12,6 +12,9 @@
     "browser": true,
     "node": false
   },
+  "globals": {
+    "Primus": true
+  },
   "rules": {
     "class-methods-use-this": 0
   }

@@ -38,6 +38,7 @@ const Head = (props) => {
       <style>
           @import url('https://fonts.googleapis.com/css?family=Roboto');
       </style>
+      <script crossOrigin="anonymous" type="text/javascript" src="/static/primus.js"/>
     </NextHead>
   );
 };
