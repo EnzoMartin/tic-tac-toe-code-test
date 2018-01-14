@@ -11,5 +11,8 @@
   "env": {
     "browser": true,
     "node": false
+  },
+  "rules": {
+    "class-methods-use-this": 0
   }
 }
