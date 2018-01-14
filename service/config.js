@@ -40,6 +40,7 @@ module.exports = {
   redis,
   redisSub,
   redisPub,
+  redisConfig,
   primus: {
     transformer: 'websockets',
     maxAge: '2 weeks',
