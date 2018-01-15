@@ -8,6 +8,9 @@
   font-size: 200%;
   color: #ff2e2a;
   user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
 }
 
 #game-grid .grid-col.self span {
