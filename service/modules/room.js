@@ -56,10 +56,17 @@ const spectate = (roomId, playerId, callback) => {
  * @param {Function} callback
  */
 const join = (roomId, playerId, symbol, callback) => {
-  async.parallel([
-    (callback) => { redis.hset(roomInfoKey(roomId), playerId, symbol, callback); },
-    (callback) => { spectate(roomId, playerId, callback); }
-  ], callback);
+  async.parallel({
+    p2: (callback) => {
+      redis.hsetnx(roomInfoKey(roomId), 'p2', playerId, callback);
+    },
+    playerId: (callback) => {
+      redis.hsetnx(roomInfoKey(roomId), playerId, symbol, callback);
+    },
+    spectate: (callback) => {
+      spectate(roomId, playerId, callback);
+    }
+  }, callback);
 };
 
 /**
@@ -70,7 +77,18 @@ const join = (roomId, playerId, symbol, callback) => {
  */
 const create = (playerId, symbol, callback) => {
   const roomId = uuid();
-  join(roomId, playerId, symbol, callback);
+  async.parallel([
+    (callback) => {
+      redis.hmset(roomInfoKey(roomId), {
+        p1: playerId,
+        [playerId]: symbol,
+        size: '3,3'
+      }, callback);
+    },
+    (callback) => { spectate(roomId, playerId, callback);}
+  ], (err) => {
+    callback(err, roomId);
+  });
 };
 
 /**
@@ -100,7 +118,7 @@ const play = (roomId, playerId, cell, callback) => {
  * @param {Function} callback
  */
 const getInfo = (roomId, callback) => {
-  redis.hmgetall(roomInfoKey(roomId), callback);
+  redis.hgetall(roomInfoKey(roomId), callback);
 };
 
 /**
@@ -118,7 +136,33 @@ const getLobby = (roomId, callback) => {
  * @param {Function} callback
  */
 const getActions = (roomId, callback) => {
-  redis.hmgetall(roomActionsKey(roomId), callback);
+  /*
+  This isn't great, but is  a work-around for how ioredis applies a
+  global transform to all commands of a type and I only want to change
+  the behavior for this 1 data fetch, so I'll live with the shame,
+  and I'm also very tired
+
+  The reason to do this is to get back the actions in the order by which
+  they were inserted in the form of an array. The transform gives back
+  an object which does not guarantee key order and thus cannot be relied
+  upon to see which player was the last one to make a move
+    */
+  async.parallel({
+    keys: (callback) => { redis.hkeys(roomActionsKey(roomId), callback); },
+    values: (callback) => { redis.hvals(roomActionsKey(roomId), callback); }
+  }, (err, result) => {
+    let data;
+    if (result) {
+      data = result.keys.map((key, index) => {
+        return {
+          key,
+          value: result.values[index]
+        };
+      });
+    }
+
+    callback(err, data);
+  });
 };
 
 /**
@@ -128,6 +172,9 @@ const getActions = (roomId, callback) => {
  */
 const getSingle = (roomId, callback) => {
   async.parallel({
+    id: (callback) => {
+      callback(null, roomId);
+    },
     info: (callback) => {
       getInfo(roomId, callback);
     },
@@ -137,7 +184,24 @@ const getSingle = (roomId, callback) => {
     actions: (callback) => {
       getActions(roomId, callback);
     }
-  }, callback);
+  }, (err, result) => {
+    let data;
+    if (result) {
+      data = {
+        id: result.id,
+        info: result.info,
+        lobby: result.lobby,
+        actions: result.actions,
+        // Re-convert to an object for easier lookups of cell occupancy
+        actionsMap: result.actions.reduce((items, item) => {
+          items[item.key] = item.value;
+          return items;
+        }, {})
+      };
+    }
+
+    callback(err, data);
+  });
 };
 
 /**
@@ -145,8 +209,8 @@ const getSingle = (roomId, callback) => {
  * @param {Function} callback
  */
 const getAll = (callback) => {
-  const rooms = [];
-  const stream = redis.hscanStream({
+  const promises = [];
+  const stream = redis.scanStream({
     match: `${redisConfig.keyPrefix}${roomInfoKey('*')}`,
     count: 50
   });
@@ -154,20 +218,16 @@ const getAll = (callback) => {
   stream.on('data', (keys) => {
     keys.forEach((fullKey) => {
       const key = fullKey.replace(redisConfig.keyPrefix, '').split('.');
-      const roomId = key[key.length - 1];
+      const roomId = key[key.length - 2];
 
-      redis.hmgetall(roomId, (err, data) => {
-        if (err) {
-          // Nothing really
-        } else {
-          rooms.push(data);
-        }
+      promises.push((callback) => {
+        getSingle(roomId, callback);
       });
     });
   });
 
   stream.on('end', () => {
-    callback(rooms);
+    async.parallel(promises, callback);
   });
 };
 

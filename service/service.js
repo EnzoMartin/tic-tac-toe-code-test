@@ -3,20 +3,21 @@ const config = require('./config');
 const http = require('http');
 const express = require('express');
 const Primus = require('primus');
-const Rooms = require('primus-rooms');
+const primusRooms = require('primus-rooms');
 const async = require('async');
 const next = require('next');
 
 // Middleware imports
-const bunyan = require('express-bunyan-logger');
 const compression = require('compression');
 const session = require('express-session');
+const bodyParser = require('body-parser');
 const RedisStore = require('connect-redis')(session);
 const cookie = require('cookie');
 const cookieParser = require('cookie-parser');
 
 // Modules
 const Player = require('./modules/player');
+const Room = require('./modules/room');
 
 // Configuration
 const { service, logger, redis, redisPub, sessionHandling, redisStore, primus, redisSub, signals } = config;
@@ -46,7 +47,8 @@ class Service {
     this.setupWebSockets();
     this.setupPubSub();
     this.setupMiddleware();
-    this.setupRoutes();
+    this.setupApiRoutes();
+    this.setupPageRoutes();
   }
 
   initialize() {
@@ -109,14 +111,29 @@ class Service {
 
   setupPubSub() {
     redisSub.on('ready', () => {
-      redisSub.psubscribe('room:*');
+      redisSub.subscribe('actions');
       redisSub.subscribe('rooms');
       redisSub.subscribe('players');
 
       redisSub.on('message', (channel, message) => {
-        console.log('Got publish message', channel, message);
         switch (channel) {
           case 'rooms':
+            Room.getAll((err, data) => {
+              if (err) {
+                logger.error({ err }, 'Failed to get rooms');
+              } else {
+                this.primus.in('lobby').write({ type: channel, data });
+              }
+            });
+            break;
+          case 'actions':
+            Room.getSingle(message, (err, data) => {
+              if (err) {
+                logger.error({ err }, `Failed to get room ${message}`);
+              } else {
+                this.primus.in(message).write({ type: channel, data });
+              }
+            });
             break;
           case 'players':
             Player.getOnlineList((err, data) => {
@@ -139,7 +156,7 @@ class Service {
     this.primus = new Primus(this.server, primus);
     this.primus.save(`${__dirname}/../client/static/primus.js`);
 
-    this.primus.plugin('rooms', Rooms);
+    this.primus.plugin('rooms', primusRooms);
 
     this.primus.on('connection', (spark) => {
       if (!spark.headers.cookie) {
@@ -171,6 +188,20 @@ class Service {
           redisPub.publish('players', null);
         });
       });
+
+      spark.on('data', (data) => {
+        switch (data.type) {
+          case 'join':
+            spark.join(data.id);
+            break;
+          case 'leave':
+            spark.leave(data.id);
+            break;
+          default:
+            logger.info(`Got unhandled event type "${data.type}"`);
+            break;
+        }
+      });
     });
   }
 
@@ -184,41 +215,79 @@ class Service {
       })
     );
 
-    /*
-    this.app.use(
-      bunyan({
-        logger: this.log,
-        // Who hates console spam? Me!
-        excludes: [
-          'body',
-          'req-headers',
-          'res-headers',
-          'user-agent',
-          'response-hrtime'
-        ]
-      })
-    );
-    */
-
     this.app.use('/static', express.static('./client/static'));
+
+    this.app.use(bodyParser.urlencoded({ extended: false }));
+    this.app.use(bodyParser.json());
 
     this.app.set('x-powered-by', false);
     this.app.set('trust proxy', 1);
   }
 
-  setupRoutes() {
+  setupApiRoutes() {
+    // Create room
+    this.app.post('/rooms', (req, res) => {
+      Room.create(req.sessionID, req.body.symbol, (err, roomId) => {
+        if (!err) {
+          redisPub.publish('rooms', null);
+        }
+
+        res.json(err || { status: 'success', roomId });
+      });
+    });
+
+    // Join room as player
+    this.app.post('/rooms/:id', (req, res) => {
+      Room.join(req.params.id, req.sessionID, req.body.symbol, (err, result) => {
+        let status = 'success';
+        if (!err) {
+          redisPub.publish('rooms', null);
+        }
+
+        // Player 2 already exists
+        if (!result.p2) {
+          res.status(409);
+          status = 'failed';
+        }
+
+        res.json(err || { status });
+      });
+    });
+
+    // Make a move
+    this.app.put('/rooms/:id', (req, res) => {
+      Room.play(req.params.id, req.sessionID, req.body.cell, (err, result) => {
+        let status = 'success';
+        redisPub.publish('actions', req.params.id);
+
+        // Cell already occupied
+        if (!result) {
+          res.status(409);
+          status = 'failed';
+        }
+
+        res.json(err || { status });
+      });
+    });
+  }
+
+  setupPageRoutes() {
     this.app.get('/', (req, res) => {
-      // console.log('Session ID', req.sessionHandling.id)
-      // console.log('Session Cookie', req.sessionCookies.get(sessionHandling.name))
-      client.render(req, res, '/', ['']);
+      Room.getAll((err, data) => {
+        client.render(req, res, '/', {
+          playerId: req.sessionID,
+          data: err ? [] : data
+        });
+      });
     });
 
-    this.app.get('/play/:id', (req, res) => {
-      client.render(req, res, '/room', ['']);
-    });
-
-    this.app.get('/watch/:id', (req, res) => {
-      client.render(req, res, '/room', ['']);
+    this.app.get('/rooms/:id', (req, res) => {
+      Room.getSingle(req.params.id, (err, data) => {
+        client.render(req, res, '/room', {
+          playerId: req.sessionID,
+          data: err ? [] : data
+        });
+      });
     });
 
     this.app.get('*', (req, res) => {

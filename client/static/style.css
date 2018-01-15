@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css?family=Roboto');
+
 body {
   margin: 0;
   padding: 0;
@@ -58,4 +60,144 @@ table th {
   display: flex;
   flex-direction: row;
   justify-content: space-around;
+}
+
+.align-right {
+  text-align: right;
+}
+
+.align-left {
+  text-align: left;
+}
+
+.align-center {
+  text-align: center;
+}
+
+.btn {
+  border: 1px solid black;
+  border-radius: 8px;
+  padding: 6px 12px;
+  display: inline-block;
+  background: linear-gradient(to right,#fff 0%,#fff 150%);
+  box-shadow: 2px 2px 6px rgba(0,0,0,0.15);
+  color: #535353;
+  transition: all ease-in 0.2s;
+  opacity: 1;
+}
+
+.btn.disabled {
+  cursor: not-allowed;
+}
+
+.btn:not(.disabled):hover {
+  background: linear-gradient(to right,#f3386e 0%,#efc940 150%);
+  box-shadow: 0 0 4px rgba(232,46,99,0.24);
+  color: #fff;
+  opacity: 1;
+}
+
+.page {
+  background: #FFF;
+  color: #535353;
+  padding: 16px;
+}
+
+.page h1,
+.page h2,
+.page h3,
+.page h4,
+.page h5,
+.page h6 {
+  color: #1b1b1b;
+}
+
+.create-game {
+  width: 100%;
+}
+
+.create-game table {
+  width: 100%;
+}
+
+.create-game h3 {
+  margin: 0;
+}
+
+.create-game td {
+  vertical-align: top;
+  padding: 8px;
+}
+
+.create-game .create-game-col {
+  vertical-align: middle;
+  text-align: center;
+  width: 250px;
+}
+
+.create-game .create-game-col button {
+  cursor: pointer;
+  font-size: 150%;
+  margin-top: 31px;
+  padding: 16px 28px;
+}
+
+.create-game .symbol-selection {
+  border-radius: 12px;
+  background-color: #1b1b1b;
+  padding: 12px;
+  margin-top: 8px;
+}
+
+.create-game .symbol-label {
+  display: inline-block;
+  border: solid 1px #cecece;
+  color: #fff;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: all ease-out 0.2s;
+  margin-right: 6px;
+}
+
+.create-game .symbol-label:last-of-type {
+  margin-right: 0;
+}
+
+.create-game .symbol-label:hover {
+  background: white;
+  color: black;
+  opacity: 0.8;
+}
+
+.create-game .symbol-input {
+  display: none;
+}
+
+.create-game .symbol-input:checked + .symbol-label:hover,
+.create-game .symbol-input:checked + .symbol-label {
+  border-color: grey;
+  background: white;
+  color: black;
+  opacity: 1;
+}
+
+#lobby h4 {
+  margin: 0;
+}
+
+#lobby td {
+  padding: 8px 12px;
+  border-bottom: 1px solid
+}
+
+#lobby td:first-of-type {
+  padding-left: 0;
+}
+
+#lobby td:last-of-type {
+  padding-right: 0;
+}
+
+#lobby tr:last-of-type td {
+  border-bottom: none;
 }

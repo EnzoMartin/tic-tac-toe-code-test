@@ -1,0 +1,48 @@
+#game-grid .grid-row {
+  overflow: hidden;
+  clear: both;
+}
+
+#game-grid .grid-col span {
+  font-weight: bold;
+  font-size: 200%;
+  color: #ff2e2a;
+  user-select: none;
+}
+
+#game-grid .grid-col.self span {
+  color: #2738ff;
+}
+
+#game-grid .grid-col {
+  border: 1px solid black;
+  width: 100px;
+  height: 100px;
+  float: left;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#game-grid .grid-col + .grid-col {
+  border-left: none;
+}
+
+#game-grid .grid-row + .grid-row .grid-col {
+  border-top: none;
+}
+
+#game-grid.playing .grid-col.occupied {
+  cursor: not-allowed;
+}
+
+#game-grid.playing .grid-col:not(.occupied):hover {
+  cursor: pointer;
+  background: #cecece;
+  box-shadow: 0 0 2px 2px rgba(27, 27, 27, 0.3) inset;
+}
+
+.player-turn {
+  display: inline-block;
+  padding-left: 8px;
+}
