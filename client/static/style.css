@@ -131,15 +131,15 @@ table th {
 
 .create-game .create-game-col {
   vertical-align: middle;
-  text-align: center;
-  width: 250px;
+  text-align: right;
+  width: 235px;
 }
 
 .create-game .create-game-col button {
   cursor: pointer;
   font-size: 150%;
   margin-top: 31px;
-  padding: 16px 28px;
+  padding: 15px 28px;
 }
 
 .create-game .symbol-selection {
@@ -190,10 +190,12 @@ table th {
   border-bottom: 1px solid
 }
 
+.create-game td:first-of-type,
 #lobby td:first-of-type {
   padding-left: 0;
 }
 
+.create-game td:last-of-type,
 #lobby td:last-of-type {
   padding-right: 0;
 }
