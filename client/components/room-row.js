@@ -8,7 +8,7 @@ const RoomRow = ({ room, playerId }) => {
       <td>Room {room.id.slice(0, 5)}</td>
       <td className="align-right">{isPlaying ? 'Playing' : ''}</td>
       <td className="align-right">
-        <a className="btn" href={`/room/${room.id}`}>{isPlaying ? 'Play' : 'Join'}</a>
+        <a className="btn" href={`/rooms/${room.id}`}>{isPlaying ? 'Play' : 'Join'}</a>
       </td>
     </tr>
   );
