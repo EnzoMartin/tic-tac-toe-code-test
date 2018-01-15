@@ -85,7 +85,7 @@ export default class extends Component {
   };
 
   handleOnClick(event) {
-    const {x, y } = event.target.dataset;
+    const {x, y } = event.currentTarget.dataset;
     if (this.state.isPlaying) {
       if (this.state.playerTurn === this.state.playerId) {
         api.playTurn(`${x},${y}`, (err, result) => {
