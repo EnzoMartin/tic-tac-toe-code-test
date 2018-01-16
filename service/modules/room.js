@@ -179,17 +179,16 @@ const checkGameWinState = (roomId, playerId, callback) => {
     if (err) {
       callback(err);
     } else {
-      const draw = game.checkDraw(data.actions, data.info);
-
-      if (draw) {
-        redis.hset(roomInfoKey(roomId), 'winner', 'draw', callback);
+      const winner = game.checkWinner(data.actions, data.info);
+      if (winner) {
+        redis.hmset(roomInfoKey(roomId), {
+          winner: winner.playerId,
+          winningSequence: JSON.stringify(winner.sequence)
+        }, callback);
       } else {
-        const winner = game.checkWinner(data.actions, data.info);
-        if (winner) {
-          redis.hmset(roomInfoKey(roomId), {
-            winner: winner.playerId,
-            winningSequence: JSON.stringify(winner.sequence)
-          }, callback);
+        const draw = game.checkDraw(data.actions, data.info);
+        if (draw) {
+          redis.hset(roomInfoKey(roomId), 'winner', 'draw', callback);
         } else {
           callback(err);
         }
