@@ -41,7 +41,7 @@ const symbols = [
   {
     name: 'Gandalf',
     id: 'wizard-symbol',
-    value: '🧙🏼‍♂️'
+    value: '🧙'
   },
   {
     name: 'The Brain',
