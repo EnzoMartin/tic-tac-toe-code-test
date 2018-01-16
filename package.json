@@ -37,7 +37,7 @@
     "express": "^4.16.2",
     "express-session": "^1.15.6",
     "ioredis": "^3.2.2",
-    "next": "^4.2.2",
+    "next": "^4.2.3",
     "primus": "^7.1.1",
     "primus-rooms": "^3.4.1",
     "prop-types": "^15.6.0",
@@ -52,11 +52,11 @@
     "enzo-codestyle": "^5.1.0",
     "eslint": "^4.15.0",
     "eslint-plugin-react": "^7.5.1",
-    "expect": "^22.0.6",
+    "expect": "^22.1.0",
     "mocha": "^4.1.0",
     "nodemon": "^1.14.11",
     "nyc": "^11.4.1",
     "proxyquire": "^1.8.0",
-    "sinon": "^4.1.4"
+    "sinon": "^4.1.5"
   }
 }
