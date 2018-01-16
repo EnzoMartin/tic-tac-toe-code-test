@@ -17,6 +17,7 @@ export default class extends Component {
     const data = { room: query.data, playerId: query.playerId };
     const lastAction = data.room.actions.pop() || { value: data.room.info.p2 }; // Player 1 should always go first
 
+    data.canPlay = data.room.info.p1 && data.room.info.p2 && !data.room.info.winner;
     data.isPlaying = data.room.info.p1 === data.playerId || data.room.info.p2 === data.playerId;
     data.playerTurn = lastAction.value === data.room.info.p2 ? data.room.info.p1 : data.room.info.p2;
 
@@ -42,6 +43,7 @@ export default class extends Component {
 
           return {
             room,
+            canPlay: room.info.p1 && room.info.p2 && !room.info.winner,
             isPlaying,
             playerTurn: lastAction.value === state.room.info.p2 ? state.room.info.p1 : state.room.info.p2
           };
@@ -53,6 +55,7 @@ export default class extends Component {
 
           return {
             room,
+            canPlay: room.info.p1 && room.info.p2 && !room.info.winner,
             playerTurn: lastAction.value === state.room.info.p2 ? state.room.info.p1 : state.room.info.p2
           };
         });
@@ -78,6 +81,7 @@ export default class extends Component {
   };
 
   state = {
+    canPlay: this.props.canPlay, // eslint-disable-line no-invalid-this
     users: this.props.users, // eslint-disable-line no-invalid-this
     playerId: this.props.playerId, // eslint-disable-line no-invalid-this
     room: this.props.room, // eslint-disable-line no-invalid-this
@@ -107,9 +111,11 @@ export default class extends Component {
   }
 
   render() {
-    const dimensions = this.state.room.info.size.split(',');
+    const { winningSequence, winner, size, p1, p2 } = this.state.room.info;
+    const dimensions = size.split(',');
     const height = parseInt(dimensions[0], 10);
     const width = parseInt(dimensions[1], 10);
+    const winningText = winner === this.state.playerId ? 'You won!' : 'You lost!';
 
     return (
       <div>
@@ -117,47 +123,54 @@ export default class extends Component {
         <Nav />
 
         <div id="rooms" className="page">
-          {this.state.isPlaying ? null : [
+          {this.state.isPlaying || p1 && p2 ? null : [
             <div key="row" className="row">
-              <Game join full={this.state.room.info.p2}/>
+              <Game join full={p2}/>
             </div>,
             <hr key="hr" />
           ]}
           <div className="row">
             <div className="players">
-              <h4>Player 1:</h4>
-              <span>
-                <Player playerId={this.state.room.info.p1} isSelf={this.state.playerId === this.state.room.info.p1}/>
+              <div className="player one">
                 <TurnIndicator
-                  isPlaying={this.state.isPlaying}
-                  playerTurn={this.state.playerTurn}
-                  playerId={this.state.room.info.p1}
-                  isSelf={this.state.room.info.p1 === this.state.playerId}
+                  playerTurn={this.state.canPlay ? this.state.playerTurn : ''}
+                  playerId={p1}
+                  currentPlayer={this.state.playerId}
                 />
-              </span>
-              <h4>Player 2:</h4>
-              {this.state.room.info.p2 ?
-                <span>
-                  <Player playerId={this.state.room.info.p2} isSelf={this.state.playerId === this.state.room.info.p2}/>
+              </div>
+              <div id="versus">
+                - VS -
+              </div>
+              <div className="player two">
+                {p2 ?
                   <TurnIndicator
-                    isPlaying={this.state.isPlaying}
-                    playerTurn={this.state.playerTurn}
-                    playerId={this.state.room.info.p2}
-                    isSelf={this.state.room.info.p2 === this.state.playerId}
+                    playerTurn={this.state.canPlay ? this.state.playerTurn : ''}
+                    playerId={p2}
+                    currentPlayer={this.state.playerId}
                   />
-                </span>
-                : <span>
-                  Waiting for opponent...
-                </span>
-              }
+                  : <span>No opponent</span>
+                }
+              </div>
             </div>
-            <div>
+            <div id="grid-container">
+              {!this.state.canPlay ?
+                <div id="grid-overlay">
+                  <div id="grid-overlay-content">
+                    {winner ?
+                      <span>
+                        {this.state.isPlaying ? winningText : <Player playerId={winner} currentPlayer={this.state.playerId}> has won!</Player>}
+                      </span> : <span>Waiting for player</span>
+                    }
+                  </div>
+                </div> : null
+              }
               <Grid
                 isPlaying={this.state.isPlaying}
                 playerTurn={this.state.playerTurn}
+                p1={p1}
                 height={height}
                 width={width}
-                winningSequence={this.state.room.info.winningSequence}
+                winningSequence={winningSequence}
                 playerId={this.state.playerId}
                 room={this.state.room.info}
                 actions={this.state.room.actionsObj}
