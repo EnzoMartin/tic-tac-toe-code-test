@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Grid = ({ isPlaying, playerTurn, height, width, room, playerId, actions, handleOnClick }) => {
+const Grid = ({ isPlaying, playerTurn, height, width, room, playerId, actions, winningSequence, handleOnClick }) => {
   return (
     <div id="game-grid" className={`${playerTurn === playerId && isPlaying ? 'playing' : ''}`}>
       {
@@ -12,11 +12,12 @@ const Grid = ({ isPlaying, playerTurn, height, width, room, playerId, actions, h
                   const index = `${x},${y}`;
                   const filledByPlayer = actions[index];
                   const isSelf = isPlaying ? filledByPlayer === playerId : filledByPlayer === room.p1;
+                  const isWinningCell = winningSequence.indexOf(index) !== -1;
 
                   return (
                     <div
                       key={`row-${x}-col-${y}`}
-                      className={`grid-col ${isSelf ? 'self' : ''} ${filledByPlayer ? 'occupied' : ''}`}
+                      className={`grid-col ${isSelf ? 'self' : ''} ${filledByPlayer ? 'occupied' : ''} ${isWinningCell ? 'winning' : ''}`}
                       data-x={x}
                       data-y={y}
                       onClick={handleOnClick}>

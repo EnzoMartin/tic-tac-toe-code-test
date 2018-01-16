@@ -11,10 +11,15 @@
   -moz-user-select: none;
   -webkit-user-select: none;
   -ms-user-select: none;
+  transition: color ease-in 0.2s;
 }
 
 #game-grid .grid-col.self span {
   color: #2738ff;
+}
+
+#game-grid .grid-col.winning span {
+  color: gold;
 }
 
 #game-grid .grid-col {

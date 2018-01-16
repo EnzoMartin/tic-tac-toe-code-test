@@ -66,10 +66,11 @@ export default class extends Component {
       info: {
         size: '3,3',
         p1: '',
-        p2: ''
+        p2: '',
+        winningSequence: []
       },
       actions: [],
-      actionsMap: {}
+      actionsObj: {}
     },
     users: [],
     playerId: '',
@@ -156,9 +157,10 @@ export default class extends Component {
                 playerTurn={this.state.playerTurn}
                 height={height}
                 width={width}
+                winningSequence={this.state.room.info.winningSequence}
                 playerId={this.state.playerId}
                 room={this.state.room.info}
-                actions={this.state.room.actionsMap}
+                actions={this.state.room.actionsObj}
                 handleOnClick={this.handleOnClick.bind(this)}/>
             </div>
           </div>

@@ -1,6 +1,7 @@
 const uuid = require('uuid/v4');
 const async = require('async');
 const { redis, redisConfig } = require('../config');
+const game = require('./game');
 
 /**
  * Returns the base Redis key for all room related keys
@@ -82,7 +83,11 @@ const create = (playerId, symbol, callback) => {
       redis.hmset(roomInfoKey(roomId), {
         p1: playerId,
         [playerId]: symbol,
-        size: '3,3'
+        size: '3,3',
+        winCondition: 3,
+        winner: '',
+        winningSequence: '[]',
+        created: new Date().toUTCString()
       }, callback);
     },
     (callback) => { spectate(roomId, playerId, callback);}
@@ -99,17 +104,6 @@ const create = (playerId, symbol, callback) => {
  */
 const leave = (roomId, playerId, callback) => {
   redis.srem(roomLobbyKey(roomId), playerId, callback);
-};
-
-/**
- * Play a given cell by a given player in a given room, returns 0 if an action already exists on the given cell
- * @param {String} roomId
- * @param {String} playerId
- * @param {String} cell
- * @param {Function} callback
- */
-const play = (roomId, playerId, cell, callback) => {
-  redis.hsetnx(roomActionsKey(roomId), cell, playerId, callback);
 };
 
 /**
@@ -151,17 +145,69 @@ const getActions = (roomId, callback) => {
     keys: (callback) => { redis.hkeys(roomActionsKey(roomId), callback); },
     values: (callback) => { redis.hvals(roomActionsKey(roomId), callback); }
   }, (err, result) => {
-    let data;
+    const data = {
+      asArray: [],
+      asObject: {}
+    };
+
     if (result) {
-      data = result.keys.map((key, index) => {
-        return {
+      result.keys.forEach((key, index) => {
+        data.asArray.push({
           key,
           value: result.values[index]
-        };
+        });
+
+        data.asObject[key] = result.values[index];
       });
     }
 
     callback(err, data);
+  });
+};
+
+/**
+ * Checks whether the game has been won by the given player and updates room accordingly
+ * @param {String} roomId
+ * @param {String} playerId
+ * @param {Function} callback
+ */
+const checkGameWinState = (roomId, playerId, callback) => {
+  async.parallel({
+    actions: (callback) => { getActions(roomId, callback); },
+    info: (callback) => { getInfo(roomId, callback); }
+  }, (err, data) => {
+    if (err) {
+      callback(err);
+    } else {
+      const winner = game.checkWinner(data.actions, data.info);
+      if (winner) {
+        redis.hmset(roomInfoKey(roomId), {
+          winner: winner.playerId,
+          winningSequence: JSON.stringify(winner.sequence)
+        }, callback);
+      } else {
+        callback(err);
+      }
+    }
+  });
+};
+
+/**
+ * Play a given cell by a given player in a given room and checks if game has been won, returns 0 if an action already exists on the given cell
+ * @param {String} roomId
+ * @param {String} playerId
+ * @param {String} cell
+ * @param {Function} callback
+ */
+const play = (roomId, playerId, cell, callback) => {
+  redis.hsetnx(roomActionsKey(roomId), cell, playerId, (err, data) => {
+    if (!err && data) {
+      checkGameWinState(roomId, playerId, (err) => {
+        callback(err, data);
+      });
+    } else {
+      callback(err, data);
+    }
   });
 };
 
@@ -191,13 +237,12 @@ const getSingle = (roomId, callback) => {
         id: result.id,
         info: result.info,
         lobby: result.lobby,
-        actions: result.actions,
-        // Re-convert to an object for easier lookups of cell occupancy
-        actionsMap: result.actions.reduce((items, item) => {
-          items[item.key] = item.value;
-          return items;
-        }, {})
+        actions: result.actions.asArray,
+        actionsObj: result.actions.asObject
       };
+
+      // Work-around for storing array in Redis and not handling it in client
+      data.info.winningSequence = JSON.parse(data.info.winningSequence);
     }
 
     callback(err, data);
