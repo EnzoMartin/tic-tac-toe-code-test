@@ -6,8 +6,7 @@ const symbols = [
   {
     name: 'Old school X',
     id: 'x-symbol',
-    value: 'X',
-    defaultChecked: true
+    value: 'X'
   },
   {
     name: 'Old school O',
@@ -50,6 +49,9 @@ const symbols = [
     value: '🧠'
   }
 ];
+
+// Randomly select an icon
+symbols[Math.floor(Math.random() * symbols.length)].defaultChecked = true;
 
 const Game = ({ join, full }) => {
   let selectedSymbol = symbols.find((item) => { return item.defaultChecked; }).value;
