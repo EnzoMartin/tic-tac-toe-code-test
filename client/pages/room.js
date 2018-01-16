@@ -27,6 +27,10 @@ export default class extends Component {
   componentDidMount() {
     this.socket = initialize();
 
+    window.setInterval(() => {
+      this.socket.write({ type: 'rooms' });
+    }, 10000);
+
     this.socket.on('open', () => {
       this.socket.write({ type: 'join', id: this.state.room.id});
     });
