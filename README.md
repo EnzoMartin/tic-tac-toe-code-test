@@ -12,6 +12,7 @@ Repository containing code challenge/test from Peltarion, original prompt inform
     REDIS_HOST=127.0.0.1
     REDIS_PORT=6379
     ```
+- Run `npm run dev`
 - Go to http://localhost:3000/
 
 ## Environment variables
