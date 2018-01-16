@@ -147,8 +147,9 @@ table th {
   border-radius: 12px;
   background-color: #1b1b1b;
   padding: 12px;
-  clear: both;
-  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-top: 8px;
 }
 
