@@ -91,7 +91,7 @@ export default class extends Component {
 
   handleOnClick(event) {
     const {x, y } = event.currentTarget.dataset;
-    if (this.state.isPlaying) {
+    if (this.state.canPlay && this.state.isPlaying) {
       if (this.state.playerTurn === this.state.playerId) {
         api.playTurn(`${x},${y}`, (err, result) => {
           if (err) {
@@ -150,7 +150,7 @@ export default class extends Component {
                     playerId={p2}
                     currentPlayer={this.state.playerId}
                   />
-                  : <span>No opponent</span>
+                  : <span>Waiting for player</span>
                 }
               </div>
             </div>
@@ -168,7 +168,7 @@ export default class extends Component {
               }
               <Grid
                 isPlaying={this.state.isPlaying}
-                playerTurn={this.state.playerTurn}
+                playerTurn={this.state.canPlay ? this.state.playerTurn : null}
                 p1={p1}
                 height={height}
                 width={width}
