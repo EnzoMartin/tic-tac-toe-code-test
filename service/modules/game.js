@@ -99,7 +99,7 @@ const checkWinner = (actions, info) => {
  */
 const checkDraw = (actions, info) => {
   const size = info.size.split(',');
-  return actions.asArray.length === size[0] * size[1];
+  return actions.asArray.length >= size[0] * size[1];
 };
 
 module.exports = {
