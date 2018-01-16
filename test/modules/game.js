@@ -1,5 +1,4 @@
 const expect = require('expect');
-const sinon = require('sinon');
 
 const game = require('../../service/modules/game');
 
