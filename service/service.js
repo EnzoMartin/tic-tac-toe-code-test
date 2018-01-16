@@ -194,8 +194,14 @@ class Service {
           case 'join':
             spark.join(data.id);
             break;
-          case 'leave':
-            spark.leave(data.id);
+          case 'rooms':
+            Room.getAll((err, data) => {
+              if (err) {
+                logger.error({ err }, 'Failed to get rooms for single socket');
+              } else {
+                spark.write({ type: 'rooms', data });
+              }
+            });
             break;
           default:
             logger.info(`Got unhandled event type "${data.type}"`);
