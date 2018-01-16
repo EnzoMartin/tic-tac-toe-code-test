@@ -264,6 +264,9 @@ class Service {
         if (!result) {
           res.status(409);
           status = 'failed';
+        } else if (result === 2) {
+          // Game finished, update the lobbies
+          redisPub.publish('rooms', null);
         }
 
         res.json(err || { status });

@@ -203,7 +203,7 @@ const play = (roomId, playerId, cell, callback) => {
   redis.hsetnx(roomActionsKey(roomId), cell, playerId, (err, data) => {
     if (!err && data) {
       checkGameWinState(roomId, playerId, (err) => {
-        callback(err, data);
+        callback(err, 2);
       });
     } else {
       callback(err, data);
