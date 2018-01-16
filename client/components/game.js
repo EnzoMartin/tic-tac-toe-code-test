@@ -28,6 +28,26 @@ const symbols = [
     name: 'The underdog',
     id: '!-symbol',
     value: '!'
+  },
+  {
+    name: 'Wannabe Data',
+    id: 'robot-symbol',
+    value: '🤖'
+  },
+  {
+    name: 'Mr Hankey',
+    id: 'poo-symbol',
+    value: '💩'
+  },
+  {
+    name: 'Gandalf',
+    id: 'wizard-symbol',
+    value: '🧙🏼‍♂️'
+  },
+  {
+    name: 'The Brain',
+    id: 'brain-symbol',
+    value: '🧠'
   }
 ];
 
