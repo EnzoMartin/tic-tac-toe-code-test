@@ -3,22 +3,11 @@ const initialize = () => {
   const url = `${protocol}://${window.location.host}/primus`;
   const socket = new Primus(url);
 
-  socket.on('data', (data) => {
-    console.log('Got WS data', data);
-  });
-
-  socket.on('open', () => {
-    console.log('Connection is alive');
-    socket.write('I lives');
-  });
-
   socket.on('reconnected', () => {
-    console.log('Socket reconnected');
+    socket.write({ type: 'rooms' });
   });
 
-  socket.on('end', (event) => {
-    console.log('Lost connection with code', event.code);
-  });
+  return socket;
 };
 
 export default initialize;

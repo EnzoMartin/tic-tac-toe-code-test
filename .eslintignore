@@ -3,3 +3,4 @@ coverage
 temp
 nginx
 .build
+client/static/primus.js

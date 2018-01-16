@@ -1,0 +1,176 @@
+#game-grid .grid-row {
+  overflow: hidden;
+  clear: both;
+}
+
+#game-grid .grid-row:first-of-type .grid-col:first-of-type {
+  border-top-left-radius: 12px;
+}
+
+#game-grid .grid-row:last-of-type .grid-col:last-of-type {
+  border-bottom-right-radius: 12px;
+}
+
+#game-grid .grid-col span {
+  font-weight: bold;
+  font-size: 250%;
+  border-radius: 20px;
+  padding: 8px 16px;
+  color: #fefefe;
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  transition: all ease-in 0.15s;
+  text-shadow: 0 2px 3px rgba(0,0,0,0.7);
+}
+
+#game-grid .grid-col span.ghost {
+  opacity: 0;
+}
+
+#game-grid .grid-col.winning span {
+  color: #ffdb03;
+  text-shadow: 0 2px 3px rgba(255, 253, 44, 0.7);
+}
+
+#game-grid .grid-col {
+  border: 1px solid black;
+  width: 125px;
+  height: 125px;
+  background: #fff;
+  float: left;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all ease-in 0.15s;
+}
+
+#game-grid .grid-col + .grid-col {
+  border-left: none;
+}
+
+#game-grid .grid-row + .grid-row .grid-col {
+  border-top: none;
+}
+
+#game-grid.playing .grid-col.occupied {
+  cursor: not-allowed;
+}
+
+#game-grid .grid-col.occupied.player1 {
+  background-color: #09dbdb;
+}
+
+#game-grid .grid-col.occupied.player2 {
+  background-color: #b37bd2;
+}
+
+#game-grid.playing .grid-col:not(.occupied):hover span.ghost {
+  opacity: 0.8;
+}
+
+#game-grid.playing .grid-col:not(.occupied):hover {
+  cursor: pointer;
+}
+
+#game-grid.playing .grid-col.hover-player1:not(.occupied):hover {
+  background-color: rgba(10, 213, 219, 0.3);
+  box-shadow: 0 0 2px 2px rgba(10, 203, 209, 0.3) inset;
+}
+
+#game-grid.playing .grid-col.hover-player2:not(.occupied):hover {
+  background-color: rgba(179, 123, 210, 0.3);
+  box-shadow: 0 0 2px 2px rgba(179, 113, 200, 0.3) inset;
+}
+
+.player-turn {
+  display: inline-block;
+  padding-left: 8px;
+}
+
+#grid-container {
+  position: relative;
+}
+
+#grid-overlay {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0,0,0, 0.4);
+  border-radius: 12px 0 12px 0;
+}
+
+#grid-overlay-content {
+  font-size: 200%;
+  color: #fff;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-shadow: 0 2px 3px rgba(0,0,0,0.7);
+}
+
+.room-title {
+  font-size: 200%;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 8px;
+  margin-bottom: 38px;
+  width: 100%;
+  text-align: center;
+}
+
+.players {
+  width: 250px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding-bottom: 84px;
+}
+
+.players .player {
+  padding: 6px 12px;
+  text-align: center;
+  color: #fff;
+  border-radius: 4px;
+  font-size: 175%;
+  text-shadow: 0 2px 3px rgba(0,0,0,0.7);
+  box-shadow: 0 1px 0 1px rgba(0,0,0,0.1);
+  width: 100%;
+  position: relative;
+}
+
+#versus {
+  font-size: 300%;
+  text-align: center;
+  margin: 24px 0;
+}
+
+.players .player.one {
+  background-color: #09dbdb;
+}
+
+.players .player.two {
+  background-color: #b37bd2;
+}
+
+.player-turn .turn-indicator {
+  opacity: 0;
+  transition: opacity 0.15s;
+  font-size: 14px;
+  background-color: #13db6f;
+  height: 15px;
+  position: absolute;
+  bottom: -19px;
+  width: 100%;
+  left: 0;
+  padding: 2px 0 6px;
+  border-radius: 0 0 4px 4px;
+}
+
+.player-turn.current-turn .turn-indicator {
+  opacity: 1;
+}

@@ -1,19 +1,44 @@
 import React, { Component } from 'react';
 
-import primus from '../lib/websocket';
+import initialize from '../lib/websocket';
 
 import Head from '../components/head';
 import Nav from '../components/nav';
+import Game from '../components/game';
+import RoomRow from '../components/room-row';
 
-export default class extends Component {
-  static getInitialProps({ query, req }) {
-    const { error } = req && req.query || {};
-    return { rooms: query, error };
+export default class Rooms extends Component {
+  static getInitialProps({ query }) {
+    Rooms.sortRooms(query.data);
+    return { rooms: query.data, playerId: query.playerId };
+  }
+
+  static sortRooms(rooms) {
+    rooms.sort((a, b) => {
+      return new Date(b.info.created) - new Date(a.info.created);
+    });
+
   }
 
   componentDidMount() {
-    primus();
+    const socket = initialize();
+    socket.on('data', (event) => {
+      if (event.type === 'rooms') {
+        Rooms.sortRooms(event.data);
+        this.setState({ rooms: event.data });
+      }
+    });
   }
+
+  static defaultProps = {
+    rooms: [],
+    playerId: ''
+  };
+
+  state = {
+    playerId: this.props.playerId, // eslint-disable-line no-invalid-this
+    rooms: this.props.rooms // eslint-disable-line no-invalid-this
+  };
 
   render() {
     return (
@@ -21,22 +46,24 @@ export default class extends Component {
         <Head title="Game Rooms" />
         <Nav />
 
-        <div id="rooms">
+        <div id="rooms" className="page">
           <div className="row">
-            <h1 className="title">Game Rooms</h1>
-          </div>
-          <div className="row">
-            Create new room
+            <Game/>
           </div>
           <hr />
           <div className="row">
-            <table width="100%" cellPadding="0" cellSpacing="0" border="0">
+            <table id="lobby" width="100%" cellPadding="0" cellSpacing="0" border="0">
+              <thead>
+                <tr>
+                  <th colSpan="3">
+                    <h4>Available rooms:</h4>
+                  </th>
+                </tr>
+              </thead>
               <tbody>
-                {this.props.rooms.map((item, index) => {
+                {this.state.rooms.map((item) => {
                   return (
-                    <tr key={index}>
-                      <td>I am room!</td>
-                    </tr>
+                    <RoomRow key={item.id} playerId={this.props.playerId} room={item}/>
                   );
                 })}
               </tbody>
