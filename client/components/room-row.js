@@ -25,6 +25,8 @@ const RoomRow = ({ room, playerId }) => {
     if (isDone) {
       status = 'Over';
       buttonText = 'View';
+    } else if (room.info.p1 && room.info.p2) {
+      status = 'Full';
     } else {
       status = 'Waiting';
     }
