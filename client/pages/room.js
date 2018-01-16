@@ -116,10 +116,11 @@ export default class extends Component {
     const height = parseInt(dimensions[0], 10);
     const width = parseInt(dimensions[1], 10);
     const winningText = winner === this.state.playerId ? 'You won!' : 'You lost!';
+    const roomTitle = `Room ${this.state.room.id.slice(0, 5)}`;
 
     return (
       <div>
-        <Head title={`Room ${this.state.room.id.slice(0, 5)}`} />
+        <Head title={roomTitle} />
         <Nav />
 
         <div id="rooms" className="page">
@@ -131,6 +132,7 @@ export default class extends Component {
           ]}
           <div className="row">
             <div className="players">
+              <div className="room-title">{roomTitle}</div>
               <div className="player one">
                 <TurnIndicator
                   playerTurn={this.state.canPlay ? this.state.playerTurn : ''}

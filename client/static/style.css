@@ -173,8 +173,8 @@ table th {
 }
 
 .create-game .symbol-label:hover {
-  background: white;
-  color: black;
+  background: #fff;
+  color: #000;
   opacity: 0.8;
 }
 

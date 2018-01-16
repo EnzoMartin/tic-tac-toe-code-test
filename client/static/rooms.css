@@ -30,7 +30,8 @@
 }
 
 #game-grid .grid-col.winning span {
-  color: gold;
+  color: #ffdb03;
+  text-shadow: 0 2px 3px rgba(255, 253, 44, 0.7);
 }
 
 #game-grid .grid-col {
@@ -112,12 +113,22 @@
   text-shadow: 0 2px 3px rgba(0,0,0,0.7);
 }
 
+.room-title {
+  font-size: 200%;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 8px;
+  margin-bottom: 38px;
+  width: 100%;
+  text-align: center;
+}
+
 .players {
   width: 250px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-direction: column;
+  padding-bottom: 84px;
 }
 
 .players .player {
