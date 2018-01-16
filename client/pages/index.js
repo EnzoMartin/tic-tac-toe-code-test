@@ -7,15 +7,24 @@ import Nav from '../components/nav';
 import Game from '../components/game';
 import RoomRow from '../components/room-row';
 
-export default class extends Component {
+export default class Rooms extends Component {
   static getInitialProps({ query }) {
+    Rooms.sortRooms(query.data);
     return { rooms: query.data, playerId: query.playerId };
+  }
+
+  static sortRooms(rooms) {
+    rooms.sort((a, b) => {
+      return new Date(b.info.created) - new Date(a.info.created);
+    });
+
   }
 
   componentDidMount() {
     const socket = initialize();
     socket.on('data', (event) => {
       if (event.type === 'rooms') {
+        Rooms.sortRooms(event.data);
         this.setState({ rooms: event.data });
       }
     });
