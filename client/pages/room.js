@@ -158,11 +158,12 @@ export default class extends Component {
               {!this.state.canPlay ?
                 <div id="grid-overlay">
                   <div id="grid-overlay-content">
-                    {winner ?
+                    {winner && winner !== 'draw' ?
                       <span>
                         {this.state.isPlaying ? winningText : <Player playerId={winner} currentPlayer={this.state.playerId}> has won!</Player>}
-                      </span> : <span>Waiting for player</span>
-                    }
+                      </span> : null}
+                    {winner === 'draw' ? <span>Draw!</span> : null}
+                    {!winner ? <span>Waiting for player</span> : null}
                   </div>
                 </div> : null
               }

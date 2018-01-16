@@ -71,16 +71,16 @@ const findWinningRowAndPlayer = (start, playerId, actions, winCondition) => {
 /**
  * Find if the last move has won the game in the given room
  * @param {Object} actions
- * @param {Object} room
+ * @param {Object} info
  * @returns {Object}
  */
-const checkWinner = (actions, room) => {
+const checkWinner = (actions, info) => {
   let winner = null;
   const actionsLen = actions.asArray.length;
 
   if (actionsLen) {
     const lastPlayed = actions.asArray[actionsLen - 1];
-    const winCondition = parseInt(room.winCondition, 10);
+    const winCondition = parseInt(info.winCondition, 10);
 
     const start = lastPlayed.key;
     const playerId = lastPlayed.value;
@@ -91,6 +91,18 @@ const checkWinner = (actions, room) => {
   return winner;
 };
 
+/**
+ * Checks whether the game has finished in a draw
+ * @param {Object} actions
+ * @param {Object} info
+ * @returns {Boolean}
+ */
+const checkDraw = (actions, info) => {
+  const size = info.size.split(',');
+  return actions.asArray.length === size[0] * size[1];
+};
+
 module.exports = {
-  checkWinner
+  checkWinner,
+  checkDraw
 };

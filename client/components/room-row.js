@@ -3,6 +3,7 @@ import React from 'react';
 const RoomRow = ({ room, playerId }) => {
   const isPlaying = room.info.p1 === playerId || room.info.p2 === playerId;
   const isDone = room.info.winner;
+  const isDraw = room.info.winner === 'draw';
   const hasWon = room.info.winner === playerId;
 
   let status;
@@ -15,6 +16,8 @@ const RoomRow = ({ room, playerId }) => {
       buttonText = 'View';
       if (hasWon) {
         status = 'Won';
+      } else if (isDraw) {
+        status = 'Draw';
       } else {
         status = 'Lost';
       }
