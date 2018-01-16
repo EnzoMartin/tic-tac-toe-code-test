@@ -22,7 +22,7 @@ const Grid = ({ p1, isPlaying, playerTurn, height, width, room, playerId, action
                       data-x={x}
                       data-y={y}
                       onClick={handleOnClick}>
-                      {filledByPlayer ? <span>{room[filledByPlayer]}</span> : <span className={`self ghost`}>{room[playerId]}</span>}
+                      {filledByPlayer ? <span>{room[filledByPlayer]}</span> : <span className={'self ghost'}>{room[playerId]}</span>}
                     </div>
                   );
                 })

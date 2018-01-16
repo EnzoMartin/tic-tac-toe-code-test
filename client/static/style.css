@@ -82,15 +82,16 @@ table th {
   background: linear-gradient(to right,#fff 0%,#fff 150%);
   box-shadow: 2px 2px 6px rgba(0,0,0,0.15);
   color: #535353;
-  transition: all ease-in 0.2s;
+  transition: all ease-in 0.15s;
   opacity: 1;
 }
 
+.btn:disabled,
 .btn.disabled {
   cursor: not-allowed;
 }
 
-.btn:not(.disabled):hover {
+.btn:not(:disabled):not(.disabled):hover {
   background: linear-gradient(to right,#f3386e 0%,#efc940 150%);
   box-shadow: 0 0 4px rgba(232,46,99,0.24);
   color: #fff;
@@ -210,4 +211,37 @@ table th {
 
 #lobby tr:last-of-type td {
   border-bottom: none;
+}
+
+.room-row .btn {
+  width: 35px;
+  text-align: center;
+}
+
+.room-row .join-btn {
+  width: 60px;
+}
+
+.room-row .status {
+  width: 100px;
+}
+
+.room-row.won td.status span {
+  color: rgb(25, 170, 56);
+}
+
+.room-row.lost td.status span {
+  color: rgb(187, 14, 33);
+}
+
+.room-row.waiting td span {
+
+}
+
+.room-row.playing td span {
+  color: #306bff;
+}
+
+.room-row.over td {
+  opacity: 0.7;
 }
