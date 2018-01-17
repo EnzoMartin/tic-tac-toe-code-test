@@ -5,7 +5,7 @@ const Nav = () => {
     <nav>
       <ul>
         <li>
-          <a href="https://github.com/EnzoMartin/peltarion-code-test" target="_blank">GitHub</a>
+          <a href="https://github.com/EnzoMartin/tic-tac-toe-code-test" target="_blank">GitHub</a>
         </li>
         <ul>
           <li>

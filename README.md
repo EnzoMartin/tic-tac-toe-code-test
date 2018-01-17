@@ -1,6 +1,6 @@
-# Peltarion Code Test
+# Tic Tac Toe Code Test
 
-Repository containing code challenge/test from Peltarion, original prompt information included at bottom
+Repository containing code challenge/test for a Multiplayer Tic Tac Toe game, original prompt information included at bottom
 
 ## Usage
 

@@ -25,7 +25,7 @@ const logger = bunyan.createLogger({
 const redisConfig = {
   host:process.env.REDIS_HOST,
   port:process.env.REDIS_PORT || 6379,
-  keyPrefix:'peltarion.tictactoe.'
+  keyPrefix:'codetest.tictactoe.'
 };
 
 const redis = new Redis(redisConfig);
@@ -52,7 +52,7 @@ module.exports = {
     client: redis
   },
   sessionHandling: {
-    name: 'peltarion.sid',
+    name: 'tictactoe.sid',
     secret: 'iloveunicorns',
     resave: true,
     genid: uuid,
